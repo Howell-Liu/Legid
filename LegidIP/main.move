@@ -150,15 +150,6 @@ module legIDModule::main {
 
         validation // returns validation status
     }
-    
-    /*
-    Transfer Accepted Algorithm
-    initially hash_transaction_history = 0x0
-    Upon transfer_accept():
-    - the hash of the nft struct is stored as the new hash_transaction_history
-    - the current_owner = init_transfer (address of the pending buyer)
-    - the init_transfer = 0x0
-    */
 
     public fun transfer_initiate(
         nft: legIdNft,
@@ -204,13 +195,22 @@ module legIDModule::main {
         // Asserts that the product is valid
         if (!validate(nft, seller_address, manufacturer_address)) return false;
 
-        let new_hash = sha3(nft)
+        let new_hash = sha3(nft_to_string(nft));
+        nft.transaction_history = new_hash;
+        nft.current_owner = nft.transit_status.pending_buyer;
+        nft.transit_status.pending_buyer = 0x0;
+        nft.transit_status.in_transit = false;
     }
 
     public fun nft_to_string(
         nft: legIdNft
     ) {
-        let 
+        let id_string: vector<u8> = vector<u8>(UID::to_le_bytes(legIdNft.id));
+        let buyer_string: vector<u8> = vector<u8>(address::to_le_bytes(legIdNft.transit_status.pending_buyer));
+        let epoch_stamp_string: vector<u8> = vector<u8>(u64::to_le_bytes(legIdNft.epoch_stamp))
+        let current_owner_string: vector<u8> = vector<u8>(u64::to_le_bytes(legIdNft.current_owner))
+        let original_minter_string: vector<u8> = vector<u8>(u64::to_le_bytes(legIdNft.original_minter))
+        return id_string + buyer_string + epoch_stamp_string + current_owner_string + original_minter_string + transaction_history
     }
 
     public fun transfer_cancel(
