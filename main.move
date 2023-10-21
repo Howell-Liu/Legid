@@ -258,8 +258,10 @@ module legIDModule::main {
         test_scenario::next_tx(scenario, admin);
         {
             // create the sword and transfer it to the initial owner
-            let adminCap = test_scenario::take
-            manufacturer_add()
+            let adminCap = test_scenario::take_from_sender<adminCapabilities>
+                           (scenario);
+            manufacturer_add(adminCap, initial_owner, "sjaf", 
+                            test_scenario::ctx(scenario))
         };
         // third transaction executed by the initial sword owner
         test_scenario::next_tx(scenario, initial_owner);
