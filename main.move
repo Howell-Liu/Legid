@@ -35,7 +35,11 @@ module legIDModule::main {
         uid : UID,
     }
 
-    struct legIdNft has key{
+    struct manuCapabilities has key {
+        uid : UID,
+    }
+
+    struct legIdNft has key, store{
         //nft_id = something to identify the initial nft, whether it be a hash or w/e
             /*
             use number:: u64;
@@ -45,7 +49,7 @@ module legIDModule::main {
         
         id : UID,
         transit_status : transitStatus, // 
-        block_stamp: u64, // block number correlating to transaction. block number has date
+        epoch_stamp: u64, // block number correlating to transaction. block number has date
         collection_number: u64,
         name: string::String,
         current_owner : address, //null address
@@ -66,9 +70,11 @@ module legIDModule::main {
     }
 
     public fun create_NFT(
-        name: vector<u8>,
+        _manuCap : manuCapabilities,
+        _name: vector<u8>,
         description: vector<u8>,
         url: vector<u8>,
+        _collection_number : u64,
         ctx: &mut TxContext
     ){
         // Intake: product_unique_info, manufacturer address
@@ -81,83 +87,42 @@ module legIDModule::main {
             // the product unique info is loaded with w/e info the creator wants to put in
         // Person working on this:
         // Expected time: 1 hour
-        //TODO 
         
-        // let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(ctx);
         
-        // let found = false;
-
-        // for addr in addresses {
-        //     if addr == sender {
-        //         found = true;
-        //         break;
-        //     }
-        // }
-
-        // assert!(found, 0);
-
-
-        // set up 
         let init_transit_status = transitStatus {
             in_transit : false,
             pending_buyer: 0x0
         }
 
         let nft = legIdNft {
+            name: string::utf8(_name),
             id: object::new(ctx),
-            transit_status: false,
-            block_stamp: 420,
-            collection_number: 12,
+            transit_status: init_transit_status,
+            epoch_stamp: tx_context::epoch(ctx),
+            collection_number: _collection_number,
             current_owner : sender,
-            transaction_history : []
+            transaction_history : 0x0,
+            original_minter: sender,
         };
 
         transfer::public_transfer(nft, sender);
-
-
-    //     struct legIdNft {
-    //     //nft_id = something to identify the initial nft, whether it be a hash or w/e
-    //         /*
-    //         use number:: u64;
-    //         use name:: string::String;
-    //         use capacity:: u64;
-    //         */
-        
-    //     id : UID,
-    //     in_transit : bool, // maybe have this as a blank address or an interested owner address
-    //     block_stamp: u64,
-    //     collection_number: u64,
-    //     name: string::String,
-
-    //         // false: not in limbo
-    //         // true: in limbo 
-    //     current_owner : address, //null address
-    //     // hash transaction_history = 
-    //     // original_minter = 0x0; //null address
-    //     //
-
-    // }
         
     } 
     
     
 
-    public fun manufacturer_add(manufacturer : address, 
+    public fun manufacturer_add(_cap : &adminCapabilities,
+                                manufacturer : address, 
                                 company_name : vector<u8>, 
                                 ctx : &mut TxContext) {
 
         let sender = tx_context::sender(ctx);
 
-        let found = false;
+        transfer::transfer(manuCapabilities {
+            uid: object::new(ctx)
+        }, sender);
 
-        for addr in  {
-            if addr == sender {
-                found = true;
-                break;
-            }
-        }
-
-        assert!(found, 0);
         // Intake: company_name, wallet public address
             // ASSERTS tx.sender is a verified admin address
         // Purpose: adds verified manufacturer to list and makes an ID
@@ -239,7 +204,13 @@ module legIDModule::main {
         // Asserts that the product is valid
         if (!validate(nft, seller_address, manufacturer_address)) return false;
 
-        let new_hash = sha3()
+        let new_hash = sha3(nft)
+    }
+
+    public fun nft_to_string(
+        nft: legIdNft
+    ) {
+        let 
     }
 
     public fun transfer_cancel(
@@ -262,7 +233,46 @@ module legIDModule::main {
 
 
 
+    
+    // *** --- API LAYER --- ***
 
+    struct OTW_legId_NFT has drop{}
+    
+
+    fun init(otw: legIdNft, ctx: &mut TxContext) {
+
+        let keys = vector[
+            utf8(b"id"),
+            utf8(b"transit_status"),
+            utf8(b"epoch_stamp"),
+            utf8(b"collection_number"),
+            utf8(b"current_owner"),
+            utf8(b"transaction_history"),
+            utf8(b"original_minter")
+        ]
+
+        let values = vector[
+            utf8(b"{id}"),
+            utf8(b"{transit_status}"),
+            utf8(b"{epoch_stamp}"),
+            utf8(b"{collection_number}"),
+            utf8(b"{current_owner}"),
+            utf8(b"{transaction_history}"),
+            utf8(b"{original_minter}")
+        ]
+
+        let publisher = package::claim(otw, ctx);
+
+        let display = display::new_with_fields<OTW_legId_NFT>(
+            &publisher, keys, values, ctx
+        );
+
+        display::update_version(&mut display);
+
+        transfer::public_transfer(publisher, sender(ctx));
+        transfer::public_transfer(display, sender(ctx));
+
+    }
 
 }
 
