@@ -1,0 +1,27 @@
+body {
+    width: 200px;
+    margin: 0 auto; 
+    padding: 10px;
+
+    /* Display elements in the center */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.img-nft {
+    border-radius: 10px;
+    max-width: 180px;
+    align-content: center;
+}
+
+.img-logo{
+    border-radius: 20px;
+    max-width: 100px;
+    align-content: center;
+}
+
+.popup-rounded-border {
+    border-radius: 10px;
+}
