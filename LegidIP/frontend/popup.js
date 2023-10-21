@@ -35,10 +35,9 @@ function profile_popup(nftInfo) {
 
     var logo = displayLogo('legid.png');
     document.body.appendChild(logo);
-
-    for (let i = 0; i < 5;  i++) {
-        var img = displayLogo({i}.png);
-        document.body.appendChild(img)
+    for (let i = 1; i < 5;  i++) {
+        var img = displayNFT(`${i}.png`);
+        document.body.appendChild(img);
     }
 }
 
@@ -49,5 +48,5 @@ function NFTinfoDisplay(info ) {
 }
 
 
-item_profile_popup('legid.png');
+profile_popup();
 
