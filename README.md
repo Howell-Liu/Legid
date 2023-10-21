@@ -1,0 +1,2 @@
+# Legid
+EFPL Sui Hackathon
